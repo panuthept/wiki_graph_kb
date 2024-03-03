@@ -5,6 +5,7 @@ import argparse
 from tqdm import tqdm
 from html import unescape
 from urllib.parse import unquote
+from collections import defaultdict
 
 
 def remove_template_styles(text):
@@ -78,14 +79,14 @@ def process_wikipedia(input_dir, output_dir):
 
     id2path = {}
     id2title = {}
-    title2id = {}
+    title2ids = defaultdict(set)
     for folder in tqdm(os.listdir(input_dir)):
         if folder == ".DS_Store": 
             continue
         for file in os.listdir(os.path.join(input_dir, folder)):
             if file == ".DS_Store": 
                 continue
-            print(f"{folder}/{file}")
+            # print(f"{folder}/{file}")
             with open(os.path.join(input_dir, folder, file), "r") as input_f:
                 processed_data = {}
                 for line in input_f:
@@ -131,15 +132,13 @@ def process_wikipedia(input_dir, output_dir):
                     if doc_id in id2title: 
                         raise ValueError(f"Found duplicated document ids: {doc_id} >> {doc_title} and {id2title[doc_id]}")
                     id2title[doc_id] = doc_title
-                    if doc_title in title2id: 
-                        raise ValueError(f"Found duplicated document title: {doc_title} >> {doc_id} and {title2id[doc_title]}")
-                    title2id[doc_title] = doc_id
+                    title2ids[doc_title].add(doc_id)
                 # Write processed data
                 with open(os.path.join(output_dir, "corpus", f"{folder}_{file.replace('wiki_', '')}.json"), "w") as output_f:
                     json.dump(processed_data, output_f)
     # Write index
-    with open(os.path.join(output_dir, "title2id.json"), "w") as output_f:
-        json.dump(title2id, output_f)
+    with open(os.path.join(output_dir, "title2ids.json"), "w") as output_f:
+        json.dump(title2ids, output_f)
     with open(os.path.join(output_dir, "id2title.json"), "w") as output_f:
         json.dump(id2title, output_f)
     with open(os.path.join(output_dir, "id2path.json"), "w") as output_f:
