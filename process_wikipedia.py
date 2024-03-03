@@ -79,7 +79,7 @@ def process_wikipedia(input_dir, output_dir):
 
     id2path = {}
     id2title = {}
-    title2ids = {}
+    title2ids = defaultdict(set)
     for folder in tqdm(os.listdir(input_dir)):
         if folder == ".DS_Store": 
             continue
@@ -125,22 +125,8 @@ def process_wikipedia(input_dir, output_dir):
                         "hyperlinks": hyperlinks,
                         "metadata": {"id": doc_id, "url": doc_url, "revid": doc_revid}
                     }
-                    if doc_id == "57313961":
-                        print(f"{doc_title} - {doc_url}\n\n{text}")
-                        print(doc_id in processed_data)
-                        print("*" * 100)
                     # Update index
-                    if doc_title in title2ids:
-                        print(f"{doc_title} - {doc_url}\n\n{text}")
-                        print("=" * 100)
-                        print(title2ids[doc_title])
-                        print(title2ids[doc_title] in processed_data)
-                        print(str(title2ids[doc_title]) in processed_data)
-                        print(int(title2ids[doc_title]) in processed_data)
-                        print(processed_data)
-                        print(f"{processed_data[title2ids[doc_title]]["title"]}\n\n{processed_data[title2ids[doc_title]]["content"]}")
-                        print()
-                    title2ids[doc_title] = doc_id
+                    title2ids[doc_title].add(doc_id)
                     if doc_id in id2path: 
                         raise ValueError(f"Found duplicated document ids: {doc_id} >> {f"{folder}_{file.replace('wiki_', '')}.json"} and {id2path[doc_id]}")
                     id2path[doc_id] = f"{folder}_{file.replace('wiki_', '')}.json"
