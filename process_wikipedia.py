@@ -135,6 +135,7 @@ def process_wikipedia(input_dir, output_dir):
                         print("=" * 100)
                         print(title2ids[doc_title])
                         print(title2ids[doc_title] in processed_data)
+                        print(str(title2ids[doc_title]) in processed_data)
                         print(f"{processed_data[title2ids[doc_title]]["title"]}\n\n{processed_data[title2ids[doc_title]]["content"]}")
                         print()
                     title2ids[doc_title] = doc_id
