@@ -125,11 +125,14 @@ def process_wikipedia(input_dir, output_dir):
                         "metadata": {"id": doc_id, "url": doc_url, "revid": doc_revid}
                     }
                     # Update index
-                    assert doc_id not in id2path, f"Found duplicated document ids: {doc_id} >> {f"{folder}_{file.replace('wiki_', '')}.json"} and {id2path[doc_id]}"
+                    if doc_id in id2path: 
+                        raise ValueError(f"Found duplicated document ids: {doc_id} >> {f"{folder}_{file.replace('wiki_', '')}.json"} and {id2path[doc_id]}")
                     id2path[doc_id] = f"{folder}_{file.replace('wiki_', '')}.json"
-                    assert doc_id not in id2path, f"Found duplicated document ids: {doc_id} >> {doc_title} and {id2title[doc_id]}"
+                    if doc_id in id2title: 
+                        raise ValueError(f"Found duplicated document ids: {doc_id} >> {doc_title} and {id2title[doc_id]}")
                     id2title[doc_id] = doc_title
-                    assert doc_id not in id2path, f"Found duplicated document title: {doc_title} >> {doc_id} and {title2id[doc_title]}"
+                    if doc_title in title2id: 
+                        raise ValueError(f"Found duplicated document title: {doc_title} >> {doc_id} and {title2id[doc_title]}")
                     title2id[doc_title] = doc_id
                 # Write processed data
                 with open(os.path.join(output_dir, "corpus", f"{folder}_{file.replace('wiki_', '')}.json"), "w") as output_f:
