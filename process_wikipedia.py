@@ -64,7 +64,7 @@ def extract_hyperlinks(text):
                 "wikipedia_title": wikipedia_title[1:-1].lower(),
             }
             remaining_content = mention_surface + remaining_content
-            acc_start += len(mention_surface) + len(remaining_content)
+            acc_start += len(remaining_content)
             remaining_text += remaining_content
             # remaining_contents.append(remaining_content)
             assert remaining_text[hyperlink["start"]:hyperlink["start"] + hyperlink["length"]] == hyperlink["mention_surface"], f'Mention index error: {remaining_text[hyperlink["start"]:hyperlink["start"] + hyperlink["length"]]} != {hyperlink["mention_surface"]}'
