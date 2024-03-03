@@ -19,20 +19,6 @@ def remove_template_styles(text):
     return remaining_text
 
 
-# def remove_externallikes(text):
-#     remaining_contents = []
-#     for i, content in enumerate(text.split("<a href=\"<a href=")):
-#         if i == 0:
-#             remaining_contents.append(content)
-#             continue
-#         entity_mention, remaining_content = content.split("</a></a>")
-#         mention_surface = entity_mention.split(">")[-1]
-#         remaining_content = mention_surface + remaining_content
-#         remaining_contents.append(remaining_content)
-#     remaining_text = "".join(remaining_contents).replace("\n\n", "\n")
-#     return remaining_text
-
-
 def extract_hyperlinks(text):
     """
     Examples of hyperlinks syntax:
@@ -40,15 +26,18 @@ def extract_hyperlinks(text):
     """
     acc_start = 0
     hyperlinks = []
-    remaining_contents = []
+    remaining_text = ""
+    # remaining_contents = []
     # Clean content
     text = text.replace("</a>s", "s</a>")
     text = text.replace("<br>", "")
     text = text.replace("»", ">>")
+    text = text.replace("«", "<<")
     for i, content in enumerate(text.split("<a href=")):
         if i == 0:
             acc_start += len(content)
-            remaining_contents.append(content)
+            remaining_text += content
+            # remaining_contents.append(content)
             continue
         if len(content.split("</a>")) < 2:
             if len(content.split(">")) < 2:
@@ -58,7 +47,8 @@ def extract_hyperlinks(text):
                 return None, None
             remaining_content = re.split(">", content, 1)[1]
             acc_start += len(remaining_content)
-            remaining_contents.append(remaining_content)
+            remaining_text += remaining_content
+            # remaining_contents.append(remaining_content)
         else:
             entity_mention, remaining_content = re.split("</a>", content, 1)
             if len(entity_mention.split(">")) < 2:
@@ -67,16 +57,19 @@ def extract_hyperlinks(text):
                 print("-" * 50)
                 return None, None
             wikipedia_title, mention_surface = re.split(">", entity_mention, 1)
-            hyperlinks.append({
+            hyperlink = {
                 "start": acc_start,
                 "length": len(mention_surface),
                 "mention_surface": mention_surface,
-                "wikipedia_title": wikipedia_title[1:-1],
-            })
+                "wikipedia_title": wikipedia_title[1:-1].lower(),
+            }
             remaining_content = mention_surface + remaining_content
             acc_start += len(mention_surface) + len(remaining_content)
-            remaining_contents.append(remaining_content)
-    remaining_text = "".join(remaining_contents)
+            remaining_text += remaining_content
+            # remaining_contents.append(remaining_content)
+            assert remaining_text[hyperlink["start"]:hyperlink["start"] + hyperlink["length"]] == hyperlink["mention_surface"], f'Mention index error: {remaining_text[hyperlink["start"]:hyperlink["start"] + hyperlink["length"]]} != {hyperlink["mention_surface"]}'
+            hyperlinks.append(hyperlink)
+    # remaining_text = "".join(remaining_contents)
     return remaining_text, hyperlinks
 
 
@@ -120,17 +113,24 @@ def process_wikipedia(input_dir, output_dir):
                             output_f.write(f"{line}\n")
                         continue
                     # Update processed data
-                    processed_data[int(doc["id"])] = {
-                        "title": doc["title"],
+                    doc_title = doc["title"].lower()
+                    doc_id = int(doc["id"])
+                    doc_url = doc["url"]
+                    doc_revid = doc["revid"]
+                    processed_data[doc_id] = {
+                        "title": doc_title,
                         "description": description,
                         "content": content,
                         "hyperlinks": hyperlinks,
-                        "metadata": {"id": doc["id"], "url": doc["url"], "revid": doc["revid"]}
+                        "metadata": {"id": doc_id, "url": doc_url, "revid": doc_revid}
                     }
                     # Update index
-                    id2path[doc["id"]] = os.path.join("corpus", f"{folder}_{file.replace('wiki_', '')}.json")
-                    id2title[int(doc["id"])] = doc["title"]
-                    title2id[doc["title"]] = int(doc["id"])
+                    assert doc_id not in id2path, f"Found duplicated document ids: {doc_id} >> {f"{folder}_{file.replace('wiki_', '')}.json"} and {id2path[doc_id]}"
+                    id2path[doc_id] = os.path.join("corpus", f"{folder}_{file.replace('wiki_', '')}.json")
+                    assert doc_id not in id2path, f"Found duplicated document ids: {doc_id} >> {doc_title} and {id2title[doc_id]}"
+                    id2title[doc_id] = doc_title
+                    assert doc_id not in id2path, f"Found duplicated document title: {doc_title} >> {doc_id} and {title2id[doc_title]}"
+                    title2id[doc_title] = doc_id
                 # Write processed data
                 with open(os.path.join(output_dir, "corpus", f"{folder}_{file.replace('wiki_', '')}.json"), "w") as output_f:
                     json.dump(processed_data, output_f)
