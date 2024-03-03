@@ -115,7 +115,7 @@ def process_wikipedia(input_dir, output_dir):
                         continue
                     # Update processed data
                     doc_title = doc["title"].lower()
-                    doc_id = int(doc["id"])
+                    doc_id = doc["id"]
                     doc_url = doc["url"]
                     doc_revid = doc["revid"]
                     if doc_id == 57313961:
@@ -133,7 +133,7 @@ def process_wikipedia(input_dir, output_dir):
                         print(title2ids[doc_title])
                         print(f"{processed_data[doc_id]["title"]}\n\n{processed_data[doc_id]["content"]}")
                         print("=" * 100)
-                        print(f"{processed_data[int(title2ids[doc_title])]["title"]}\n\n{processed_data[int(title2ids[doc_title])]["content"]}")
+                        print(f"{processed_data[title2ids[doc_title]]["title"]}\n\n{processed_data[title2ids[doc_title]]["content"]}")
                         print()
                     title2ids[doc_title] = doc_id
                     if doc_id in id2path: 
