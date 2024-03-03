@@ -118,6 +118,9 @@ def process_wikipedia(input_dir, output_dir):
                     doc_id = int(doc["id"])
                     doc_url = doc["url"]
                     doc_revid = doc["revid"]
+                    if doc_id == 57313961:
+                        print(f"{doc_title}\n\n{content}")
+                        print("*" * 100)
                     processed_data[doc_id] = {
                         "title": doc_title,
                         "description": description,
