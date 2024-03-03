@@ -118,11 +118,6 @@ def process_wikipedia(input_dir, output_dir):
                     doc_id = doc["id"]
                     doc_url = doc["url"]
                     doc_revid = doc["revid"]
-                    if doc_id == "57313961":
-                        print(text)
-                        print("-" * 100)
-                        print(f"{doc_title} - {doc_url}\n\n{content}")
-                        print("*" * 100)
                     processed_data[doc_id] = {
                         "title": doc_title,
                         "description": description,
@@ -130,15 +125,16 @@ def process_wikipedia(input_dir, output_dir):
                         "hyperlinks": hyperlinks,
                         "metadata": {"id": doc_id, "url": doc_url, "revid": doc_revid}
                     }
+                    if doc_id == "57313961":
+                        print(f"{doc_title} - {doc_url}\n\n{text}")
+                        print(doc_id in processed_data)
+                        print("*" * 100)
                     # Update index
                     if doc_title in title2ids:
-                        print(text)
-                        print("-" * 100)
-                        print(f"{doc_title} - {doc_url}\n\n{content}")
-                        print("*" * 100)
-                        print(title2ids[doc_title])
-                        print(f"{processed_data[doc_id]["title"]}\n\n{processed_data[doc_id]["content"]}")
+                        print(f"{doc_title} - {doc_url}\n\n{text}")
                         print("=" * 100)
+                        print(title2ids[doc_title])
+                        print(title2ids[doc_title] in processed_data)
                         print(f"{processed_data[title2ids[doc_title]]["title"]}\n\n{processed_data[title2ids[doc_title]]["content"]}")
                         print()
                     title2ids[doc_title] = doc_id
