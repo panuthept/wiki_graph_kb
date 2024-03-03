@@ -119,7 +119,7 @@ def process_wikipedia(input_dir, output_dir):
                     doc_url = doc["url"]
                     doc_revid = doc["revid"]
                     if doc_id == "57313961":
-                        print(f"{doc_title}\n\n{content}")
+                        print(f"{doc_title} - {doc_url}\n\n{content}")
                         print("*" * 100)
                     processed_data[doc_id] = {
                         "title": doc_title,
@@ -130,7 +130,7 @@ def process_wikipedia(input_dir, output_dir):
                     }
                     # Update index
                     if doc_title in title2ids:
-                        print(f"{doc_title}\n\n{content}")
+                        print(f"{doc_title} - {doc_url}\n\n{content}")
                         print("-" * 100)
                         print(title2ids[doc_title])
                         print(f"{processed_data[doc_id]["title"]}\n\n{processed_data[doc_id]["content"]}")
