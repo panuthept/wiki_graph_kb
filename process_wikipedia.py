@@ -86,7 +86,7 @@ def process_wikipedia(input_dir, output_dir):
         for file in os.listdir(os.path.join(input_dir, folder)):
             if file == ".DS_Store": 
                 continue
-            # print(f"{folder}/{file}")
+            print(f"{folder}/{file}")
             with open(os.path.join(input_dir, folder, file), "r") as input_f:
                 processed_data = {}
                 for line in input_f:
@@ -129,7 +129,7 @@ def process_wikipedia(input_dir, output_dir):
                     if doc_title in title2ids:
                         print(f"{processed_data[doc_id]["title"]}\n\n{processed_data[doc_id]["content"]}")
                         print("=" * 100)
-                        print(f"{processed_data[title2ids[doc_title]]["title"]}\n\n{processed_data[title2ids[doc_title]]["content"]}")
+                        print(f"{processed_data[int(title2ids[doc_title])]["title"]}\n\n{processed_data[int(title2ids[doc_title])]["content"]}")
                         print()
                     title2ids[doc_title] = doc_id
                     if doc_id in id2path: 
