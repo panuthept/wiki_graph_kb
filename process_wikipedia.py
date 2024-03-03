@@ -126,7 +126,7 @@ def process_wikipedia(input_dir, output_dir):
                     }
                     # Update index
                     assert doc_id not in id2path, f"Found duplicated document ids: {doc_id} >> {f"{folder}_{file.replace('wiki_', '')}.json"} and {id2path[doc_id]}"
-                    id2path[doc_id] = os.path.join("corpus", f"{folder}_{file.replace('wiki_', '')}.json")
+                    id2path[doc_id] = f"{folder}_{file.replace('wiki_', '')}.json"
                     assert doc_id not in id2path, f"Found duplicated document ids: {doc_id} >> {doc_title} and {id2title[doc_id]}"
                     id2title[doc_id] = doc_title
                     assert doc_id not in id2path, f"Found duplicated document title: {doc_title} >> {doc_id} and {title2id[doc_title]}"
