@@ -35,9 +35,10 @@ To retrieve items, using the `retrieve()` method.
 ```python
 document = kb.retrieve(query=Query(type="document", id="12"))                                     # Retrieve the document whose id is '12'
 documents = kb.retrieve(query=Query(type="documents", title="Anarchism"))                         # Retrieve all documents whose title is 'Anarchism'
-title, desc = kb.retrieve(query=Query(type="document", id="12", keys=["title", "description"]))   # Retrieve title and description of the document whose id is '12'
+title, desc = kb.retrieve(query=Query(type="document", id="12", key=["title", "description"]))    # Retrieve title and description of the document whose id is '12'
+passages = kb.retrieve(query=Query(type="document", id="12", key="paragraph"))                    # Retrieve all passages in the document whose id is '12'
+passages = kb.retrieve(query=Query(type="passages", id=["12_0", "12_1"]))                         # Retrieve the first and second passages in the document whose id is '12'
 passage = kb.retrieve(query=Query(type="passage", id="12_0"))                                     # Retrieve the first passage in the document whose id is '12'
-passages = kb.retrieve(query=Query(type="passages", id="12", keys="paragraph"))                   # Retrieve all passages in the document whose id is '12'
 ```
 To update the database, using the `add()`, `update()`, `delete()` methods.
 ```python
