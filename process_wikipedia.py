@@ -98,9 +98,13 @@ def process_wikipedia(input_dir, output_dir):
                 continue
             # print(f"{folder}/{file}")
             with open(os.path.join(input_dir, folder, file), "r") as input_f:
-                processed_data = {}
+                document_data = {}
                 for line in input_f:
                     doc = json.loads(line)
+                    doc_title = doc["title"].lower()
+                    doc_id = doc["id"]
+                    doc_url = doc["url"]
+                    doc_revid = doc["revid"]
                     text = doc["text"]
                     text = unescape(text)
                     text = unquote(text)
@@ -116,26 +120,38 @@ def process_wikipedia(input_dir, output_dir):
                     # Clean text
                     content = remove_template_styles(content)
                     content = remove_short_paragraphs(content)
-                    # content = remove_externallikes(content)
-                    content, hyperlinks = extract_hyperlinks(content)
-                    # Save fail cases
-                    if hyperlinks is None:
-                        os.makedirs(os.path.join(output_dir, "fail_cases", folder), exist_ok=True)
-                        with open(os.path.join(output_dir, "fail_cases", folder, file), "a") as output_f:
-                            output_f.write(f"{line}\n")
+                    if content == "":
                         continue
-                    # Update processed data
-                    doc_title = doc["title"].lower()
-                    doc_id = doc["id"]
-                    doc_url = doc["url"]
-                    doc_revid = doc["revid"]
-                    processed_data[doc_id] = {
-                        "title": doc_title,
-                        "description": description,
-                        "content": content,
-                        "hyperlinks": hyperlinks,
-                        "metadata": {"id": doc_id, "url": doc_url, "revid": doc_revid}
-                    }
+
+                    passages = []
+                    for i, passage in enumerate(content.split("\n")):
+                        passage, hyperlinks = extract_hyperlinks(passage)
+                        # Save fail cases
+                        if hyperlinks is None:
+                            os.makedirs(os.path.join(output_dir, "fail_cases", folder), exist_ok=True)
+                            with open(os.path.join(output_dir, "fail_cases", folder, file), "a") as output_f:
+                                output_f.write(json.dumps({
+                                    "id": doc_id,
+                                    "title": doc_title,
+                                    "passage": {"id": i, "text": passage},
+                                }))
+                            continue
+                        # Update processed data
+                        if doc_id not in document_data:
+                            document_data[doc_id] = {
+                                "id": doc_id,
+                                "title": doc_title,
+                                "description": description,
+                                "paragraph": [],
+                                "metadata": {"url": doc_url, "revid": doc_revid},
+                            }
+                        passage_id = len(passages)
+                        passage_data = {
+                            "id": f"{doc_id}_{passage_id}",
+                            "text": passage,
+                            "hyperlink": hyperlinks,
+                        }
+                        document_data[doc_id]["paragraph"].append(passage_data)
                     # Update index
                     title2ids[doc_title].add(doc_id)
                     if doc_id in id2path: 
@@ -146,7 +162,7 @@ def process_wikipedia(input_dir, output_dir):
                     id2title[doc_id] = doc_title
                 # Write processed data
                 with open(os.path.join(output_dir, "corpus", f"{folder}_{file.replace('wiki_', '')}.json"), "w") as output_f:
-                    json.dump(processed_data, output_f)
+                    json.dump(document_data, output_f)
     # Write index
     title2ids = {key: list(values) for key, values in title2ids.items()}
     with open(os.path.join(output_dir, "title2ids.json"), "w") as output_f:
