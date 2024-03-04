@@ -137,6 +137,7 @@ def process_wikipedia(input_dir, output_dir):
                 with open(os.path.join(output_dir, "corpus", f"{folder}_{file.replace('wiki_', '')}.json"), "w") as output_f:
                     json.dump(processed_data, output_f)
     # Write index
+    title2ids = {key: list(values) for key, values in title2ids.items()}
     with open(os.path.join(output_dir, "title2ids.json"), "w") as output_f:
         json.dump(title2ids, output_f)
     with open(os.path.join(output_dir, "id2title.json"), "w") as output_f:
