@@ -13,7 +13,7 @@ python -m wikiextractor.WikiExtractor enwiki-20240220-pages-articles-multistream
 --json \
 --links
 ```
-- Run `process_wikipedia.py` to clean the text contents, extract hyperlinks, and create index.
+- Run `process_wikipedia.py` to clean the documents, split documents, and extract hyperlinks.
 ```python
 python -m process_wikipedia --input ./extracted_wikipedia --output ./wikipedia_corpus
 ```
