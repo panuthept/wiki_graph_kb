@@ -20,6 +20,16 @@ def remove_template_styles(text):
     return remaining_text
 
 
+def remove_short_paragraphs(text):
+    remaining_contents = []
+    for content in text.split("\n"):
+        if len(content) < 100:
+            continue
+        remaining_contents.append(content)
+    remaining_text = "\n".join(remaining_contents)
+    return remaining_text
+
+
 def extract_hyperlinks(text):
     """
     Examples of hyperlinks syntax:
@@ -105,6 +115,7 @@ def process_wikipedia(input_dir, output_dir):
                         continue
                     # Clean text
                     content = remove_template_styles(content)
+                    content = remove_short_paragraphs(content)
                     # content = remove_externallikes(content)
                     content, hyperlinks = extract_hyperlinks(content)
                     # Save fail cases
