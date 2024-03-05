@@ -193,7 +193,7 @@ def process_wikipedia(input_dir, output_dir):
                             if hyperlink["wikipedia_title"].lower() in title2ids:
                                 success_hyperlink_count += 1
 
-    unique_title_count = sum([title for title, ids in title2ids.items() if len(ids) == 1])
+    unique_title_count = len([title for title, ids in title2ids.items() if len(ids) == 1])
 
     print(f"Number of Documents: {len(id2title)} / {raw_document_count} ({round(len(id2title) / raw_document_count * 100, 4)}%)")
     print(f"Number of Hyperlinks: {success_hyperlink_count} / {hyperlink_count} ({round(success_hyperlink_count / hyperlink_count * 100, 4)}%)")
