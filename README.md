@@ -23,7 +23,8 @@ The finished Wikipedia corpus can be downloaded using this [link]().
 ## Wikidata Processing
 
 ## Using WikiGraphKB
-Create the `WikiGraphKB` object given the paths to `wikipedia_corpus` and `wikidata_corpus`
+Create the `WikiGraphKB` object given the paths to `wikipedia_corpus` and `wikidata_corpus`.
+```python
 kb = WikiGraphKB(wikipedia_corpus_path, wikidata_corpus_path)
 ```
 To retrieve items, using the `query()` method.
