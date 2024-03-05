@@ -17,10 +17,6 @@ python -m wikiextractor.WikiExtractor enwiki-20240220-pages-articles-multistream
 ```python
 python -m process_wikipedia --input ./extracted_wikipedia --output ./wikipedia_corpus
 ```
-- Run `wikipedia_statistic.py` to observe the statistics of the processed Wikipedia corpus, e.g., number of pages and hyperlinks.
-```python
-python -m wikipedia_statistic --input ./wikipedia_corpus
-```
 
 The finished Wikipedia corpus can be downloaded using this [link]().
 
