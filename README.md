@@ -6,14 +6,15 @@ WikiGraphKB is a knowledge graph database that combines Wikipedia with Wikidata.
 
 ## Wikipedia Processing
 - Download a [Wikipedia dump](https://dumps.wikimedia.org/enwiki/20240220/), e.g., [enwiki-20240220-pages-articles-multistream.xml.bz2](https://dumps.wikimedia.org/enwiki/20240220/enwiki-20240220-pages-articles-multistream.xml.bz2).
-- Extract text contents from the downloaded dump with [WikiExtractor](https://github.com/attardi/wikiextractor/tree/master).
+- Extract contents from the downloaded dump with [WikiExtractor](https://github.com/attardi/wikiextractor/tree/master).
 ```python
-python -m wikiextractor.WikiExtractor enwiki-20240220-pages-articles-multistream.xml.bz2 \
+python -m wikiextractor.WikiExtractor
+./enwiki-20240220-pages-articles-multistream.xml.bz2 \
 --output ./extracted_wikipedia \
 --json \
 --links
 ```
-- Run `process_wikipedia.py` to clean the documents, split documents, and extract hyperlinks.
+- Run `process_wikipedia.py` to clean the documents, split documents, extract hyperlinks, and create index.
 ```python
 python -m process_wikipedia --input ./extracted_wikipedia --output ./wikipedia_corpus
 ```
@@ -21,11 +22,23 @@ python -m process_wikipedia --input ./extracted_wikipedia --output ./wikipedia_c
 The finished Wikipedia corpus can be downloaded using this [link]().
 
 ## Wikidata Processing
+- Download a [Wikidata dump](https://www.wikidata.org/wiki/Wikidata:Database_download/en), e.g., [wikidata-lastest-all.json.bz2](https://dumps.wikimedia.org/wikidatawiki/entities/latest-all.json.bz2).
+- Extract contents from the downloaded dump with [simple-wikidata-db](https://github.com/neelguha/simple-wikidata-db).
+```python
+python -m simple_wikidata_db.preprocess_dump \
+--input_file ./wikidata-lastest-all.json.bz2 \
+--out_dir ./wikidata_corpus \
+--language_id en
+```
+
+the finished Wikidata corpus can be downloaded using this [link]().
 
 ## Using WikiGraphKB
-Create the `WikiGraphKB` object given the paths to `wikipedia_corpus` and `wikidata_corpus`.
+Create the `WikiGraphKB` object given the paths to [wikipedia corpus]() and [wikidata corpus](), the `WikiGraphKB` will automatically create index and links between Wikipedia and Wikidata items.
 ```python
-kb = WikiGraphKB(wikipedia_corpus_path, wikidata_corpus_path)
+kb = WikiGraphKB(wikipedia_corpus_path, wikidata_corpus_path, save_path="./wikigraph")
+# or
+kb = WikiGraphKB.load("./wikigraph")
 ```
 To retrieve items, using the `query()` method.
 ```python
