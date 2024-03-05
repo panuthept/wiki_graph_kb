@@ -34,11 +34,19 @@ python -m simple_wikidata_db.preprocess_dump \
 the finished Wikidata corpus can be downloaded using this [link]().
 
 ## Using WikiGraphKB
-Create the `WikiGraphKB` object given the paths to [wikipedia corpus]() and [wikidata corpus](), the `WikiGraphKB` will automatically create index and links between Wikipedia and Wikidata items.
+Create the `WikiGraphKB` object given the paths to [wikipedia corpus]() and [wikidata corpus](), the `WikiGraphKB` will automatically create graph database using (Neo4j)[] backend.
 ```python
-kb = WikiGraphKB(wikipedia_corpus_path, wikidata_corpus_path, save_path="./wikigraph")
-# or
-kb = WikiGraphKB.load("./wikigraph")
+kb = WikiGraphKB(uri="<URI for Neo4j database>", auth=("<Username>", "<Password>"), database_name="WikiGraphKB_20240220")
+```
+To create the database, using the `create()` method.
+```python
+kb.create(wikipedia_corpus_path, wikidata_corpus_path)
+```
+To update the database, using the `add()`, `edit()`, `delete()` methods.
+```python
+kb.add(Document(id="12", title="Anarchism", description="Political philosophy and movement"))     # Add a document
+kb.edit(Document(id="12", title="Anarchism", description="Some new description"))                 # Edit a document
+kb.delete(Document(id="12"))                                                                      # Remove a document
 ```
 To retrieve items, using the `query()` method.
 ```python
@@ -51,14 +59,8 @@ passages = kb.query("passages", id=["12_0", "12_1"])                         # R
 passage = kb.query("passage", id="12_0")                                     # Retrieve the first passage in the document whose id is '12'
 entities = kb.query("passage", id="12_0", key="mentions")                    # Retrieve all entities mentioned in the passage whose id is '12_0'
 ```
-`WikiGraphKB` also support vector search by providing `embeddings` and `top_k` arguments.
+`WikiGraphKB` also support vector search, using the `embeddings` and `top_k` arguments.
 ```python
 kb.encode()                                                                  # Encode knowledge using default encoder model
 documents = kb.query("documents", embeddings=embeddings, top_k=5)            # Retrieve top-5 documents
-```
-To update the database, using the `add()`, `update()`, `delete()` methods.
-```python
-kb.add(Document(id="12", title="Anarchism", description="Political philosophy and movement"))     # Add a document
-kb.update(Document(id="12", title="Anarchism", description="Some new description"))               # Update a document
-kb.delete(Document(id="12"))                                                                      # Remove a document
 ```
