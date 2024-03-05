@@ -13,18 +13,38 @@ python -m wikiextractor.WikiExtractor enwiki-20240220-pages-articles-multistream
 --json \
 --links
 ```
-- Run `process_wikipedia.py` to clean the text contents, extract hyperlinks, and create index.
+- Run `process_wikipedia.py` to clean the documents, split documents, and extract hyperlinks.
 ```python
-python -m process_wikipedia --input ./extracted_wikipedia --output ./processed_wikipedia
+python -m process_wikipedia --input ./extracted_wikipedia --output ./wikipedia_corpus
+```
+- Run `wikipedia_statistic.py` to observe the statistics of the processed Wikipedia corpus, e.g., number of pages and hyperlinks.
+```python
+python -m wikipedia_statistic --input ./wikipedia_corpus
 ```
 
-- Run `chunk_wikipedia.py` to divide each document into several chunks.
-
-- Run `wikipedia_statistic.py` to check the statistics of the processed wikipedia corpus, e.g., number of pages and hyperlinks.
-```python
-python -m wikipedia_statistic --input ./processed_wikipedia
-```
-
-The finished Wikipedia can be downloaded using this [link]().
+The finished Wikipedia corpus can be downloaded using this [link]().
 
 ## Wikidata Processing
+
+## Using WikiGraphKB
+The `WikiGraphKB` class will automatically generate the graph database given the `wikipedia corpus` and `wikidata corpus`.
+```python
+kb = WikiGraphKB(wikipedia_corpus_path, wikidata_corpus_path)
+```
+To retrieve items, using the `retrieve()` method.
+```python
+document = kb.retrieve(query=Query(type="document", id="12"))                                     # Retrieve the document whose id is '12'
+documents = kb.retrieve(query=Query(type="documents", title="Anarchism"))                         # Retrieve all documents whose title is 'Anarchism'
+title, desc = kb.retrieve(query=Query(type="document", id="12", key=["title", "description"]))    # Retrieve title and description of the document whose id is '12'
+entity = kb.retrieve(query=Query(type="document", id="12", key="refers_to"))                      # Retrieve the entity of the document whose id is '12'
+passages = kb.retrieve(query=Query(type="document", id="12", key="paragraph"))                    # Retrieve all passages in the document whose id is '12'
+passages = kb.retrieve(query=Query(type="passages", id=["12_0", "12_1"]))                         # Retrieve the first and second passages in the document whose id is '12'
+passage = kb.retrieve(query=Query(type="passage", id="12_0"))                                     # Retrieve the first passage in the document whose id is '12'
+entities = kb.retrieve(query=Query(type="passage", id="12_0", key="mentions"))                    # Retrieve all entities mentioned in the passage whose id is '12_0'
+```
+To update the database, using the `add()`, `update()`, `delete()` methods.
+```python
+kb.add(Document(id="12", title="Anarchism", description="Political philosophy and movement"))     # Add a document
+kb.update(Document(id="12", title="Anarchism", description="Some new description"))               # Update a document
+kb.delete(Document(id="12"))                                                                      # Remove a document
+```
