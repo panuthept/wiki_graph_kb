@@ -34,13 +34,19 @@ python -m simple_wikidata_db.preprocess_dump \
 the finished Wikidata corpus can be downloaded using this [link]().
 
 ## Using WikiGraphKB
-Create the `WikiGraphKB` object given the paths to [wikipedia corpus]() and [wikidata corpus](), the `WikiGraphKB` will automatically create graph database using (Neo4j)[] backend.
+`WikiGraphKB` is based on [Neo4j](https://github.com/neo4j/neo4j?tab=readme-ov-file) database, it will automatically build the database given the paths to [wikipedia corpus]() and [wikidata corpus]().
 ```python
-kb = WikiGraphKB(uri="<URI for Neo4j database>", auth=("<Username>", "<Password>"), database_name="WikiGraphKB_20240220")
+kb = WikiGraphKB(uri="<URI for Neo4j database>", auth=("<Username>", "<Password>"))
 ```
-To create the database, using the `create()` method.
+To create the a new collection, using the `new()` method.
 ```python
-kb.create(wikipedia_corpus_path, wikidata_corpus_path)
+kb.new("WikiGraphKB_20240220", wikipedia_corpus_path, wikidata_corpus_path)
+```
+To load the existing collection, specifying the `collection` argument or using the `load()` method.
+```python
+kb = WikiGraphKB(uri="<URI for Neo4j database>", auth=("<Username>", "<Password>"), collection="WikiGraphKB_20240220")
+# or
+kb.load("WikiGraphKB_20240220")
 ```
 To update the database, using the `add()`, `edit()`, `delete()` methods.
 ```python
