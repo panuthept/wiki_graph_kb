@@ -188,7 +188,7 @@ def process_wikipedia(input_dir, output_dir):
                 docs = json.loads(line)
                 for doc in docs.values():
                     for passage in doc["paragraph"]:
-                        for hyperlink in doc["hyperlink"]:
+                        for hyperlink in passage["hyperlink"]:
                             hyperlink_count += 1
                             if hyperlink["wikipedia_title"].lower() in title2ids:
                                 success_hyperlink_count += 1
