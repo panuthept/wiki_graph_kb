@@ -31,16 +31,21 @@ The `WikiGraphKB` class will automatically generate the graph database given the
 ```python
 kb = WikiGraphKB(wikipedia_corpus_path, wikidata_corpus_path)
 ```
-To retrieve items, using the `retrieve()` method.
+To retrieve items, using the `query()` method.
 ```python
-document = kb.retrieve(query=Query(type="document", id="12"))                                     # Retrieve the document whose id is '12'
-documents = kb.retrieve(query=Query(type="documents", title="Anarchism"))                         # Retrieve all documents whose title is 'Anarchism'
-title, desc = kb.retrieve(query=Query(type="document", id="12", key=["title", "description"]))    # Retrieve title and description of the document whose id is '12'
-entity = kb.retrieve(query=Query(type="document", id="12", key="refers_to"))                      # Retrieve the entity of the document whose id is '12'
-passages = kb.retrieve(query=Query(type="document", id="12", key="paragraph"))                    # Retrieve all passages in the document whose id is '12'
-passages = kb.retrieve(query=Query(type="passages", id=["12_0", "12_1"]))                         # Retrieve the first and second passages in the document whose id is '12'
-passage = kb.retrieve(query=Query(type="passage", id="12_0"))                                     # Retrieve the first passage in the document whose id is '12'
-entities = kb.retrieve(query=Query(type="passage", id="12_0", key="mentions"))                    # Retrieve all entities mentioned in the passage whose id is '12_0'
+document = kb.query("document", id="12")                                     # Retrieve the document whose id is '12'
+documents = kb.query("documents", title="Anarchism")                         # Retrieve all documents whose title is 'Anarchism'
+title, desc = kb.query("document", id="12", key=["title", "description"])    # Retrieve title and description of the document whose id is '12'
+entity = kb.query("document", id="12", key="refers_to")                      # Retrieve the entity of the document whose id is '12'
+passages = kb.query("document", id="12", key="paragraph")                    # Retrieve all passages in the document whose id is '12'
+passages = kb.query("passages", id=["12_0", "12_1"])                         # Retrieve the first and second passages in the document whose id is '12'
+passage = kb.query("passage", id="12_0")                                     # Retrieve the first passage in the document whose id is '12'
+entities = kb.query("passage", id="12_0", key="mentions")                    # Retrieve all entities mentioned in the passage whose id is '12_0'
+```
+`WikiGraphKB` also support vector search by providing `embeddings` and `top_k` arguments.
+```python
+kb.encode()                                                                  # Encode knowledge using default encoder model
+documents = kb.query("documents", embeddings=embeddings, top_k=5)            # Retrieve top-5 documents
 ```
 To update the database, using the `add()`, `update()`, `delete()` methods.
 ```python
