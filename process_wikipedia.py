@@ -123,7 +123,7 @@ def process_wikipedia(input_dir, output_dir):
                     if content == "":
                         continue
 
-                    passages = []
+                    passage_id = 0
                     for i, passage in enumerate(content.split("\n")):
                         passage, hyperlinks = extract_hyperlinks(passage)
                         # Save fail cases
@@ -145,12 +145,12 @@ def process_wikipedia(input_dir, output_dir):
                                 "paragraph": [],
                                 "metadata": {"url": doc_url, "revid": doc_revid},
                             }
-                        passage_id = len(passages)
                         passage_data = {
                             "id": f"{doc_id}_{passage_id}",
                             "text": passage,
                             "hyperlink": hyperlinks,
                         }
+                        passage_id += 1
                         document_data[doc_id]["paragraph"].append(passage_data)
                     # Update index
                     title2ids[doc_title].add(doc_id)
