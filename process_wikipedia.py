@@ -89,6 +89,7 @@ def process_wikipedia(input_dir, output_dir):
 
     id2path = {}
     id2title = {}
+    raw_document_count = 0
     title2ids = defaultdict(set)
     for folder in tqdm(os.listdir(input_dir)):
         if folder == ".DS_Store": 
@@ -100,6 +101,8 @@ def process_wikipedia(input_dir, output_dir):
             with open(os.path.join(input_dir, folder, file), "r") as input_f:
                 document_data = {}
                 for line in input_f:
+                    raw_document_count += 1
+
                     doc = json.loads(line)
                     doc_title = doc["title"].lower()
                     doc_id = doc["id"]
@@ -171,6 +174,30 @@ def process_wikipedia(input_dir, output_dir):
         json.dump(id2title, output_f)
     with open(os.path.join(output_dir, "id2path.json"), "w") as output_f:
         json.dump(id2path, output_f)
+
+    # Report corpus statistic
+    hyperlink_count = 0
+    success_hyperlink_count = 0
+    for file in tqdm(os.listdir(os.path.join(output_dir, "corpus"))):
+        if file == ".DS_Store": 
+            continue
+        with open(os.path.join(output_dir, "corpus", file), "r") as f:
+            for line in f:
+                if line == "":
+                    continue
+                docs = json.loads(line)
+                for doc in docs.values():
+                    for passage in doc["paragraph"]:
+                        for hyperlink in doc["hyperlink"]:
+                            hyperlink_count += 1
+                            if hyperlink["wikipedia_title"].lower() in title2ids:
+                                success_hyperlink_count += 1
+
+    unique_title_count = sum([title for title, ids in title2ids.items() if len(ids) == 1])
+
+    print(f"Number of Documents: {len(id2title)} / {raw_document_count} ({round(len(id2title) / raw_document_count * 100, 4)}%)")
+    print(f"Number of Hyperlinks: {success_hyperlink_count} / {hyperlink_count} ({round(success_hyperlink_count / hyperlink_count * 100, 4)}%)")
+    print(f"Number of Unique Titles: {unique_title_count} / {len(title2ids)} ({round(unique_title_count / len(title2ids) * 100, 4)}%)")
 
 
 def main():
