@@ -116,12 +116,16 @@ def process_wikipedia(input_dir, output_dir):
                     text = unquote(text)
                     if text == "":
                         print("Error text:")
+                        print(f"{folder}/{file}")
+                        print(doc_id)
                         print(doc["text"])
                         print("-" * 50)
                         error_text_count += 1
                         continue
                     if len(text.split("\n")) == 1:
                         print("Error text:")
+                        print(f"{folder}/{file}")
+                        print(doc_id)
                         print(doc["text"])
                         print("-" * 50)
                         error_text_count += 1
@@ -137,6 +141,8 @@ def process_wikipedia(input_dir, output_dir):
                     content = remove_short_paragraphs(content)
                     if content == "":
                         print("Error content:")
+                        print(f"{folder}/{file}")
+                        print(doc_id)
                         print(doc["text"])
                         print("-" * 50)
                         error_content_count += 1
@@ -173,6 +179,8 @@ def process_wikipedia(input_dir, output_dir):
                     
                     if len(document_data["paragraph"]) == 0:
                         print("Error paragraph:")
+                        print(f"{folder}/{file}")
+                        print(doc_id)
                         print(doc["text"])
                         print("-" * 50)
                         error_paragraph_count += 1
