@@ -115,35 +115,33 @@ def process_wikipedia(input_dir, output_dir):
                     text = unescape(text)
                     text = unquote(text)
                     if text == "":
-                        print("Error text:")
-                        print(f"{folder}/{file}")
-                        print(doc_id)
-                        print(doc["text"])
-                        print("-" * 50)
-                        error_text_count += 1
-                        continue
-                    if len(text.split("\n")) == 1:
-                        print("Error text:")
-                        print(f"{folder}/{file}")
-                        print(doc_id)
-                        print(doc["text"])
-                        print("-" * 50)
                         error_text_count += 1
                         continue
 
-                    description, content = re.split("\n", text, 1)
-                    if "href=" in description:
-                        # Some pages do not have a short description
-                        description = ""
-                        content = description + content
-                    # Clean text
-                    content = remove_template_styles(content)
-                    content = remove_short_paragraphs(content)
-                    if content == "":
+                    # Get description and content
+                    if len(text.split("\n")) == 1:
+                        if "href=" in text:
+                            # Some pages only have short content
+                            description = ""
+                            content = text
+                        else:
+                            continue
+                    else:
+                        description, content = re.split("\n", text, 1)
+                        if "href=" in description:
+                            # Some pages do not have a description   
+                            description = ""                         
+                            content = text
+                    # Clean content
+                    cleaned_content = remove_template_styles(content)
+                    cleaned_content = remove_short_paragraphs(cleaned_content)
+                    if cleaned_content == "":
                         print("Error content:")
                         print(f"{folder}/{file}")
                         print(doc_id)
                         print(doc["text"])
+                        print("*" * 50)
+                        print(content)
                         print("-" * 50)
                         error_content_count += 1
                         continue
@@ -156,7 +154,7 @@ def process_wikipedia(input_dir, output_dir):
                         "paragraph": [],
                         "metadata": {"url": doc_url, "revid": doc_revid},
                     }
-                    for i, passage in enumerate(content.split("\n")):
+                    for i, passage in enumerate(cleaned_content.split("\n")):
                         passage, hyperlinks = extract_hyperlinks(passage)
                         # Save fail cases
                         if hyperlinks is None:
@@ -182,6 +180,8 @@ def process_wikipedia(input_dir, output_dir):
                         print(f"{folder}/{file}")
                         print(doc_id)
                         print(doc["text"])
+                        print("*" * 50)
+                        print(cleaned_content)
                         print("-" * 50)
                         error_paragraph_count += 1
                         continue
