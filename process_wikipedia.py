@@ -136,13 +136,6 @@ def process_wikipedia(input_dir, output_dir):
                     cleaned_content = remove_template_styles(content)
                     cleaned_content = remove_short_paragraphs(cleaned_content)
                     if cleaned_content == "":
-                        print("Error content:")
-                        print(f"{folder}/{file}")
-                        print(doc_id)
-                        print(doc["text"])
-                        print("*" * 50)
-                        print(content)
-                        print("-" * 50)
                         error_content_count += 1
                         continue
 
@@ -231,8 +224,8 @@ def process_wikipedia(input_dir, output_dir):
     unique_title_count = len([title for title, ids in title2ids.items() if len(ids) == 1])
 
     print(f"Number of Documents: {len(id2title)} / {raw_document_count} ({round(len(id2title) / raw_document_count * 100, 4)}%)")
-    print(f"Error text: {error_text_count}")
-    print(f"Error content: {error_content_count}")
+    print(f"Empty document: {error_text_count}")
+    print(f"Lack of content: {error_content_count}")
     print(f"Error hyperlink: {error_hyperlink_count}")
     print(f"Error paragraph: {error_paragraph_count}")
     print(f"Number of Hyperlinks: {success_hyperlink_count} / {hyperlink_count} ({round(success_hyperlink_count / hyperlink_count * 100, 4)}%)")
