@@ -87,9 +87,12 @@ def extract_hyperlinks(text):
 def process_wikipedia(input_dir, output_dir):
     os.makedirs(os.path.join(output_dir, "corpus"), exist_ok=True)
 
-    id2path = {}
     id2title = {}
     raw_document_count = 0
+    error_text_count = 0
+    error_content_count = 0
+    error_hyperlink_count = 0
+    error_paragraph_count = 0
     title2ids = defaultdict(set)
     for folder in tqdm(os.listdir(input_dir)):
         if folder == ".DS_Store": 
@@ -98,8 +101,8 @@ def process_wikipedia(input_dir, output_dir):
             if file == ".DS_Store": 
                 continue
             # print(f"{folder}/{file}")
+            processed_documents = []
             with open(os.path.join(input_dir, folder, file), "r") as input_f:
-                document_data = {}
                 for line in input_f:
                     raw_document_count += 1
 
@@ -111,22 +114,33 @@ def process_wikipedia(input_dir, output_dir):
                     text = doc["text"]
                     text = unescape(text)
                     text = unquote(text)
-                    if len(text.split("\n")) == 1:
+                    if text == "":
+                        error_text_count += 1
                         continue
+                    if len(text.split("\n")) == 1:
+                        error_text_count += 1
+                        continue
+
                     description, content = re.split("\n", text, 1)
                     if "href=" in description:
                         # Some pages do not have a short description
                         description = ""
                         content = description + content
-                    if text == "":
-                        continue
                     # Clean text
                     content = remove_template_styles(content)
                     content = remove_short_paragraphs(content)
                     if content == "":
+                        error_content_count += 1
                         continue
 
-                    passage_id = 0
+                    # Initial document_data
+                    document_data = {
+                        "id": doc_id,
+                        "title": doc_title,
+                        "description": description,
+                        "paragraph": [],
+                        "metadata": {"url": doc_url, "revid": doc_revid},
+                    }
                     for i, passage in enumerate(content.split("\n")):
                         passage, hyperlinks = extract_hyperlinks(passage)
                         # Save fail cases
@@ -138,55 +152,56 @@ def process_wikipedia(input_dir, output_dir):
                                     "title": doc_title,
                                     "passage": {"id": i, "text": passage},
                                 }))
+                            error_hyperlink_count += 1
                             continue
-                        # Update processed data
-                        if doc_id not in document_data:
-                            document_data[doc_id] = {
-                                "id": doc_id,
-                                "title": doc_title,
-                                "description": description,
-                                "paragraph": [],
-                                "metadata": {"url": doc_url, "revid": doc_revid},
-                            }
+                        # Update document_data
                         passage_data = {
-                            "id": f"{doc_id}_{passage_id}",
+                            "id": f"{doc_id}_{len(document_data["paragraph"])}",
                             "text": passage,
                             "hyperlink": hyperlinks,
                         }
-                        passage_id += 1
-                        document_data[doc_id]["paragraph"].append(passage_data)
+                        document_data["paragraph"].append(passage_data)
+                    
+                    if len(document_data["paragraph"]) == 0:
+                        error_paragraph_count += 1
+                        continue
+
+                    # Update processed_documents
+                    processed_documents.append(document_data)
+
                     # Update index
                     title2ids[doc_title].add(doc_id)
-                    if doc_id in id2path: 
-                        raise ValueError(f"Found duplicated document ids: {doc_id} >> {f"{folder}_{file.replace('wiki_', '')}.json"} and {id2path[doc_id]}")
-                    id2path[doc_id] = f"{folder}_{file.replace('wiki_', '')}.json"
                     if doc_id in id2title: 
                         raise ValueError(f"Found duplicated document ids: {doc_id} >> {doc_title} and {id2title[doc_id]}")
                     id2title[doc_id] = doc_title
-                # Write processed data
-                with open(os.path.join(output_dir, "corpus", f"{folder}_{file.replace('wiki_', '')}.json"), "w") as output_f:
-                    json.dump(document_data, output_f)
+
+            if len(processed_documents) > 0:
+                os.makedirs(os.path.join(output_dir, "corpus", folder), exist_ok=True)
+                with open(os.path.join(output_dir, "corpus", folder, file), "w") as output_f:
+                    for document_data in processed_documents:
+                        output_f.write(json.dumps(document_data) + "\n")
+
     # Write index
     title2ids = {key: list(values) for key, values in title2ids.items()}
     with open(os.path.join(output_dir, "title2ids.json"), "w") as output_f:
         json.dump(title2ids, output_f)
     with open(os.path.join(output_dir, "id2title.json"), "w") as output_f:
         json.dump(id2title, output_f)
-    with open(os.path.join(output_dir, "id2path.json"), "w") as output_f:
-        json.dump(id2path, output_f)
 
     # Report corpus statistic
     hyperlink_count = 0
     success_hyperlink_count = 0
-    for file in tqdm(os.listdir(os.path.join(output_dir, "corpus"))):
-        if file == ".DS_Store": 
+    for folder in tqdm(os.listdir(output_dir, "corpus")):
+        if folder == ".DS_Store": 
             continue
-        with open(os.path.join(output_dir, "corpus", file), "r") as f:
-            for line in f:
-                if line == "":
-                    continue
-                docs = json.loads(line)
-                for doc in docs.values():
+        for file in os.listdir(os.path.join(output_dir, "corpus", folder)):
+            if file == ".DS_Store": 
+                continue
+            with open(os.path.join(output_dir, "corpus", folder, file), "r") as f:
+                for line in f:
+                    if line == "":
+                        continue
+                    doc = json.loads(line)
                     for passage in doc["paragraph"]:
                         for hyperlink in passage["hyperlink"]:
                             hyperlink_count += 1
@@ -196,6 +211,10 @@ def process_wikipedia(input_dir, output_dir):
     unique_title_count = len([title for title, ids in title2ids.items() if len(ids) == 1])
 
     print(f"Number of Documents: {len(id2title)} / {raw_document_count} ({round(len(id2title) / raw_document_count * 100, 4)}%)")
+    print(f"Error text: {error_text_count}")
+    print(f"Error content: {error_content_count}")
+    print(f"Error hyperlink: {error_hyperlink_count}")
+    print(f"Error paragraph: {error_paragraph_count}")
     print(f"Number of Hyperlinks: {success_hyperlink_count} / {hyperlink_count} ({round(success_hyperlink_count / hyperlink_count * 100, 4)}%)")
     print(f"Number of Unique Titles: {unique_title_count} / {len(title2ids)} ({round(unique_title_count / len(title2ids) * 100, 4)}%)")
 
