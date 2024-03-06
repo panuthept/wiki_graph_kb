@@ -115,9 +115,15 @@ def process_wikipedia(input_dir, output_dir):
                     text = unescape(text)
                     text = unquote(text)
                     if text == "":
+                        print("Error text:")
+                        print(doc["text"])
+                        print("-" * 50)
                         error_text_count += 1
                         continue
                     if len(text.split("\n")) == 1:
+                        print("Error text:")
+                        print(doc["text"])
+                        print("-" * 50)
                         error_text_count += 1
                         continue
 
@@ -130,6 +136,9 @@ def process_wikipedia(input_dir, output_dir):
                     content = remove_template_styles(content)
                     content = remove_short_paragraphs(content)
                     if content == "":
+                        print("Error content:")
+                        print(doc["text"])
+                        print("-" * 50)
                         error_content_count += 1
                         continue
 
@@ -163,6 +172,9 @@ def process_wikipedia(input_dir, output_dir):
                         document_data["paragraph"].append(passage_data)
                     
                     if len(document_data["paragraph"]) == 0:
+                        print("Error paragraph:")
+                        print(doc["text"])
+                        print("-" * 50)
                         error_paragraph_count += 1
                         continue
 
