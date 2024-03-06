@@ -22,7 +22,7 @@ python -m process_wikipedia --input ./extracted_wikipedia --output ./wikipedia_c
 The finished Wikipedia corpus can be downloaded using this [link]().
 
 ## Wikidata Processing
-- Download a [Wikidata dump](https://www.wikidata.org/wiki/Wikidata:Database_download/en), e.g., [wikidata-lastest-all.json.bz2](https://dumps.wikimedia.org/wikidatawiki/entities/latest-all.json.bz2).
+- Download a [Wikidata dump](https://www.wikidata.org/wiki/Wikidata:Database_download/en), e.g., [wikidata-lastest-all.json.gz](https://dumps.wikimedia.org/wikidatawiki/entities/latest-all.json.gz).
 - Extract contents from the downloaded dump with [simple-wikidata-db](https://github.com/neelguha/simple-wikidata-db).
 ```python
 python -m simple_wikidata_db.preprocess_dump \
