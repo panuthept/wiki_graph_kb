@@ -38,15 +38,13 @@ the finished Wikidata corpus can be downloaded using this [link]().
 ```python
 kb = WikiGraphKB(uri="<URI for Neo4j database>", auth=("<Username>", "<Password>"))
 ```
-To create the a new collection, using the `new()` method.
+To create the a new collection, using the `new_collection()` method.
 ```python
-kb.new("WikiGraphKB_20240220", wikipedia_corpus_path, wikidata_corpus_path)
+kb.new_collection("WikiGraphKB_20240220", wikipedia_corpus_path, wikidata_corpus_path)
 ```
-To load the existing collection, specifying the `collection` argument or using the `load()` method.
+To load the existing collection, using the `load_collection()` method.
 ```python
-kb = WikiGraphKB(uri="<URI for Neo4j database>", auth=("<Username>", "<Password>"), collection="WikiGraphKB_20240220")
-# or
-kb.load("WikiGraphKB_20240220")
+kb.load_collection("WikiGraphKB_20240220")
 ```
 To update the database, using the `add()`, `edit()`, `delete()` methods.
 ```python
