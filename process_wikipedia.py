@@ -191,7 +191,7 @@ def process_wikipedia(input_dir, output_dir):
     # Report corpus statistic
     hyperlink_count = 0
     success_hyperlink_count = 0
-    for folder in tqdm(os.listdir(output_dir, "corpus")):
+    for folder in tqdm(os.listdir(os.path.join(output_dir, "corpus"))):
         if folder == ".DS_Store": 
             continue
         for file in os.listdir(os.path.join(output_dir, "corpus", folder)):
