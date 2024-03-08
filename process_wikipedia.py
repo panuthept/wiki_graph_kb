@@ -88,6 +88,7 @@ def process_wikipedia(input_dir, output_dir):
     os.makedirs(os.path.join(output_dir, "corpus"), exist_ok=True)
 
     id2title = {}
+    passage_count = 0
     raw_document_count = 0
     error_text_count = 0
     error_content_count = 0
@@ -167,6 +168,7 @@ def process_wikipedia(input_dir, output_dir):
                             "hyperlink": hyperlinks,
                         }
                         document_data["paragraph"].append(passage_data)
+                        passage_count += 1
                     
                     if len(document_data["paragraph"]) == 0:
                         print("Error paragraph:")
@@ -223,6 +225,7 @@ def process_wikipedia(input_dir, output_dir):
 
     unique_title_count = len([title for title, ids in title2ids.items() if len(ids) == 1])
 
+    print(f"Number of Passages: {passage_count}")
     print(f"Number of Documents: {len(id2title)} / {raw_document_count} ({round(len(id2title) / raw_document_count * 100, 4)}%)")
     print(f"Empty document: {error_text_count}")
     print(f"Lack of content: {error_content_count}")
