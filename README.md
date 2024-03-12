@@ -23,12 +23,20 @@ The `wikipedia_corpus` can be downloaded using this [link]().
 
 ## Wikidata Processing
 - Download a [Wikidata dump](https://www.wikidata.org/wiki/Wikidata:Database_download/en), e.g., [wikidata-lastest-all.json.gz](https://dumps.wikimedia.org/wikidatawiki/entities/latest-all.json.gz).
+- Download a Wikidata's properties dump from [Propbrowse](https://hay.toolforge.org/propbrowse/).
+```
+wget https://hay.toolforge.org/propbrowse/props.json
+```
 - Extract contents from the downloaded dump with [simple-wikidata-db](https://github.com/neelguha/simple-wikidata-db) (takes 15 hrs on 10 CPUs).
 ```python
 python -m simple_wikidata_db.preprocess_dump \
 --input_file ./wikidata-lastest-all.json.bz2 \
---out_dir ./wikidata_corpus \  # 250 GB
+--out_dir ./extracted_wikidata \  # 250 GB
 --language_id en
+```
+- Run `process_wikidata.py` to aggregate necessary data.
+```python
+python -m process_wikidata --input ./extracted_wikidata --output ./wikidata_corpus  # 31 GB
 ```
 
 The `wikidata_corpus` can be downloaded using this [link]().
