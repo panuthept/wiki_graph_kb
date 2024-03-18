@@ -1,8 +1,7 @@
 # WikiGraphKB
 WikiGraphKB is a knowledge graph database that combines Wikipedia with Wikidata.
 
-![WikiGraphKB](https://github.com/panuthept/wiki_graph_kb/assets/28400944/e41187e4-48d7-40ae-a212-257b451cded3)
-
+![WikiGraphKB](https://github.com/panuthept/wiki_graph_kb/assets/28400944/08e9476c-1ced-4b7d-8d2a-1b715ff1f723)
 
 ## Wikipedia Processing
 - Download a [Wikipedia dump](https://dumps.wikimedia.org/enwiki/20240220/), e.g., [enwiki-20240220-pages-articles-multistream.xml.bz2](https://dumps.wikimedia.org/enwiki/20240220/enwiki-20240220-pages-articles-multistream.xml.bz2).
