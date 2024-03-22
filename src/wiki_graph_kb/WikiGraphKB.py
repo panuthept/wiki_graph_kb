@@ -1,7 +1,7 @@
 import os
 import json
 from tqdm import tqdm
-from typing import List
+from typing import List, Set
 from neo4j import GraphDatabase
 from wiki_graph_kb.data_types import Entity, Document, Property
 
@@ -19,6 +19,20 @@ class WikiGraphKB:
 
     # def select_collection(self, collection: str) -> None:
     #     self.collection = collection
+        
+    def get_locked_entities(self) -> Set[str]:
+        transactions = kb.query("SHOW TRANSACTIONS YIELD parameters, currentQuery")
+        transactions = [t for t in transactions if "e:Entity" in t["currentQuery"]]
+
+        locked_entities = set()
+        for t in transactions:
+            if "id" in t["parameters"]:
+                locked_entities.add(t["parameters"]["id"])
+            if "sub_id" in t["parameters"]:
+                locked_entities.add(t["parameters"]["sub_id"])
+            if "obj_id" in t["parameters"]:
+                locked_entities.add(t["parameters"]["obj_id"])
+        return locked_entities
 
     def update_collection(
             self, 
@@ -203,17 +217,18 @@ class WikiGraphKB:
             return session.run(query, parameters).data()
 
 
-# if __name__ == "__main__":
-#     import argparse
+if __name__ == "__main__":
+    import argparse
 
-#     parser = argparse.ArgumentParser()
-#     parser.add_argument("--uri", type=str, default="bolt://localhost:7687") # bolt://ist-compute-1-001:7687
-#     parser.add_argument("--username", type=str, default="neo4j")
-#     parser.add_argument("--password", type=str, default="panuthept")
-#     args = parser.parse_args()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--uri", type=str, default="bolt://localhost:7687") # bolt://ist-compute-1-001:7687
+    parser.add_argument("--username", type=str, default="neo4j")
+    parser.add_argument("--password", type=str, default="panuthept")
+    args = parser.parse_args()
 
-#     URI = args.uri
-#     AUTH = (args.username, args.password)
-#     kb = WikiGraphKB(uri=URI, auth=AUTH)
-#     response = kb.query("MATCH (n) RETURN count(n)")
-#     print(f"Number of existing nodes: {response[0]["count(n)"]}")
+    URI = args.uri
+    AUTH = (args.username, args.password)
+    kb = WikiGraphKB(uri=URI, auth=AUTH)
+    # response = kb.query("MATCH (n) RETURN count(n)")
+    response = kb.get_locked_entities()
+    print(response)
