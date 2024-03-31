@@ -5,14 +5,14 @@ from collections import defaultdict
 
 @dataclass
 class Entity:
-    id: str
-    name: str
-    description: str
-    aliases: List[str]
-    wikipedia_title: str
-    entity_relations: Dict[str, str]
-    entity_values: Dict[str, str]
-    qualifiers: Dict[str, str]
+    id: str | None = None
+    name: str | None = None
+    description: str | None = None
+    aliases: List[str] | None = None
+    wikipedia_title: str | None = None
+    entity_relations: Dict[str, str] | None = None
+    entity_values: Dict[str, str] | None = None
+    qualifiers: Dict[str, str] | None = None
 
     @classmethod
     def from_json(self, data: Dict) -> 'Entity':

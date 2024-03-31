@@ -104,10 +104,13 @@ class WikiGraphKB:
                     )
 
         # Create graph for wikidata corpus
-        for file_path in tqdm(entities_file_paths):
+        progress_bar = tqdm(entities_file_paths)
+        for file_path in progress_bar:
             with open(file_path, "r") as f:
-                for line in f:
+                for i, line in enumerate(f):
                     entity = Entity.from_json(json.loads(line))
+                    progress_bar.set_description(f"FILE: {file_path} LINE: {i+1} {entity.id} RELATION: {len(entity.entity_relations)} VALUE: {len(entity.entity_values)}")
+                    progress_bar.refresh()
                     if entity.name is None:
                         continue
                     # Create an entity node and links to the document
@@ -115,12 +118,14 @@ class WikiGraphKB:
                         self.query(
                             """
                             MERGE (e:Entity {id: $id})
-                            SET e.name = $name 
-                            SET e.description = $description
-                            SET e.aliases = $aliases
-                            WITH e
+                            ON CREATE
+                                SET e.name = $name 
+                                SET e.description = $description
+                                SET e.aliases = $aliases
+                                WITH e
                             MATCH (d:Document {title: $wikipedia_title})
-                            MERGE (e)-[:DESCRIBED_IN]->(d)
+                            WHERE NOT (e)-[:DESCRIBED_IN]->(d)
+                            CREATE (e)-[:DESCRIBED_IN]->(d)
                             """,
                             {
                                 "id": entity.id,
@@ -134,9 +139,10 @@ class WikiGraphKB:
                         self.query(
                             """
                             MERGE (e:Entity {id: $id})
-                            SET e.name = $name 
-                            SET e.description = $description
-                            SET e.aliases = $aliases
+                            ON CREATE
+                                SET e.name = $name 
+                                SET e.description = $description
+                                SET e.aliases = $aliases
                             """,
                             {
                                 "id": entity.id,
@@ -148,10 +154,19 @@ class WikiGraphKB:
                     for claim_id, values in entity.entity_relations.items():
                         self.query(
                             """
-                            MATCH (sub_e:Entity {id: $sub_id})
                             MERGE (obj_e:Entity {id: $obj_id})
-                            MERGE (sub_e)-[:%s {claim_id: $claim_id, name: $name}]->(obj_e)
-                            """ % values["property_id"],
+                            """,
+                            {
+                                "obj_id": values["value"],
+                            }
+                        )
+                        self.query(
+                            """
+                            MATCH (sub_e:Entity {id: $sub_id})
+                            MATCH (obj_e:Entity {id: $obj_id})
+                            WHERE NOT (sub_e)-[:%s {claim_id: $claim_id, name: $name}]->(obj_e)
+                            CREATE (sub_e)-[:%s {claim_id: $claim_id, name: $name}]->(obj_e)
+                            """ % (values["property_id"], values["property_id"]),
                             {
                                 "sub_id": entity.id,
                                 "obj_id": values["value"],
@@ -162,10 +177,19 @@ class WikiGraphKB:
                     for claim_id, values in entity.entity_values.items():
                         self.query(
                             """
-                            MATCH (sub_e:Entity {id: $sub_id})
                             MERGE (v:Value {value: $value})
-                            MERGE (sub_e)-[:%s {claim_id: $claim_id, name: $name}]->(v)
-                            """ % values["property_id"],
+                            """,
+                            {
+                                "value": values["value"],
+                            }
+                        )
+                        self.query(
+                            """
+                            MATCH (sub_e:Entity {id: $sub_id})
+                            MATCH (v:Value {value: $value})
+                            WHERE NOT (sub_e)-[:%s {claim_id: $claim_id, name: $name}]->(v)
+                            CREATE (sub_e)-[:%s {claim_id: $claim_id, name: $name}]->(v)
+                            """ % (values["property_id"], values["property_id"]),
                             {
                                 "sub_id": entity.id,
                                 "value": values["value"],
@@ -185,7 +209,8 @@ class WikiGraphKB:
                             """
                             MATCH (d:Document {id: $doc_id})
                             MERGE (p:Passage {id: $passage_id, text: $text})
-                            MERGE (d)-[:CONTAINS]->(p)
+                            WHERE NOT (d)-[:CONTAINS]->(p)
+                            CREATE (d)-[:CONTAINS]->(p)
                             """,
                             {
                                 "passage_id": paragraph.id,
@@ -216,6 +241,71 @@ class WikiGraphKB:
         with self.driver.session(database=self.collection) as session:
             return session.run(query, parameters).data()
 
+    def get_entities(
+            self, 
+            wikidata_qid: str = None, 
+            wikidata_name: str = None,
+            wikipedia_id: str = None,
+            wikipedia_title: str = None,
+            required_properties: List[str] = ["id", "name", "description", "aliases"],
+    ) -> List[Entity]:
+        assert wikidata_qid is not None or wikidata_name is not None or wikipedia_id is not None or wikipedia_title is not None, "At least one of the following arguments must be provided: wikidata_qid, wikidata_name, wikipedia_id, wikipedia_title"
+
+        if wikidata_qid is not None:
+            response = self.query(
+                """
+                MATCH (e:Entity {id: $id})
+                RETURN e
+                """,
+                {
+                    "id": wikidata_qid,
+                }
+            )
+        elif wikidata_name is not None:
+            response = self.query(
+                """
+                MATCH (e:Entity {name: $name})
+                RETURN e
+                """,
+                {
+                    "name": wikidata_name,
+                }
+            )
+        elif wikipedia_id is not None:
+            response = self.query(
+                """
+                MATCH (e:Entity)-[:DESCRIBED_IN]->(d:Document {id: $id})
+                RETURN e
+                """,
+                {
+                    "id": wikipedia_id,
+                }
+            )
+        elif wikipedia_title is not None:
+            response = self.query(
+                """
+                MATCH (e:Entity)-[:DESCRIBED_IN]->(d:Document {title: $title})
+                RETURN e
+                """,
+                {
+                    "title": wikipedia_title,
+                }
+            )
+
+        entities = []
+        for r in response:
+            entity = Entity()
+            is_pass = True
+            for property in required_properties:
+                if property not in r["e"]:
+                    is_pass = False
+                    break
+                entity.__setattr__(property, r["e"][property])
+            if is_pass:
+                entities.append(entity)
+
+        return entities
+
 
 if __name__ == "__main__":
     import argparse
@@ -229,6 +319,9 @@ if __name__ == "__main__":
     URI = args.uri
     AUTH = (args.username, args.password)
     kb = WikiGraphKB(uri=URI, auth=AUTH)
-    # response = kb.query("MATCH (n) RETURN count(n)")
-    response = kb.get_locked_entities()
-    print(response)
+    # response = kb.query("MATCH (e:Entity {name: 'Michael Jordan'}) RETURN e")
+    # response = kb.get_locked_entities()
+    # print(response)
+    entities = kb.get_entities(wikidata_name="Michael Jordan")
+    print(len(entities))
+    print(entities)

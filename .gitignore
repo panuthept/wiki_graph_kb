@@ -160,3 +160,8 @@ cython_debug/
 #.idea/
 /data
 .DS_Store
+*.jsonl
+*.json
+*.sh
+*.sub
+*.dump
