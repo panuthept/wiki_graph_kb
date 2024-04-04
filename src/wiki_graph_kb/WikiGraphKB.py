@@ -62,7 +62,7 @@ class WikiGraphKB:
 
             # Get property mapping qid to name
             properties = {}
-            for file_path in tqdm(properties_file_paths):
+            for file_path in properties_file_paths:
                 with open(file_path, "r") as f:
                     for line in f:
                         property = Property.from_json(json.loads(line))
@@ -104,16 +104,26 @@ class WikiGraphKB:
                     )
 
         # Create graph for wikidata corpus
-        progress_bar = tqdm(entities_file_paths)
-        for file_path in progress_bar:
+        new_entity_count = 0
+        for file_path in tqdm(entities_file_paths):
             with open(file_path, "r") as f:
-                for i, line in enumerate(f):
+                for line in tqdm(f, leave=False):
                     entity = Entity.from_json(json.loads(line))
-                    progress_bar.set_description(f"FILE: {file_path} LINE: {i+1} {entity.id} RELATION: {len(entity.entity_relations)} VALUE: {len(entity.entity_values)}")
-                    progress_bar.refresh()
                     if entity.name is None:
                         continue
-                    # Create an entity node and links to the document
+                    # Check if the entity already exists
+                    response = self.query(
+                        """
+                        MATCH (e:Entity {id: $id})
+                        RETURN e
+                        """,
+                        {
+                            "id": entity.id,
+                        }
+                    )
+                    if len(response) == 0:
+                        new_entity_count += 1
+                    # Create a new entity node and links to the document
                     if entity.wikipedia_title:
                         self.query(
                             """
@@ -197,6 +207,7 @@ class WikiGraphKB:
                                 "name": properties[values["property_id"]].name,
                             }
                         )
+            print(f"New entities: {new_entity_count}")
                     
         # Create graph for wikipedia corpus
         for file_path in tqdm(wikipedia_file_paths):
